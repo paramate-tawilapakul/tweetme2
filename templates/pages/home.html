@@ -1,25 +1,83 @@
-{% extends 'base.html' %} {% block content %} Welcome to Tweetme 2
+{% extends 'base.html' %} {% block head_title %} This is amazing {% endblock %}
+{% block content %}
+<div class="row text-center">
+  <div class="col">
+    <h1>Welcome to Tweetme 2</h1>
+  </div>
+</div>
 
-<div id="tweets">
-  Replase me
+<div class="row mb-4">
+  <div class="col-md4 mx-auto col-10">
+    <form action="/create-tweet" class="form" method="POST">
+      {% csrf_token %}
+      <input type="hidden" value="/" name="next" />
+      <textarea
+        name="content"
+        rows="2"
+        class="form-control"
+        placeholder="Your tweet"
+      ></textarea>
+      <button type="submit" class="btn btn-primary">Tweet</button>
+    </form>
+  </div>
+</div>
+
+<div class="row" id="tweets">
+  Loading...
 </div>
 
 <script>
   const tweetsElement = document.getElementById('tweets')
-  tweetsElement.innerHTML = 'Loading...'
+  // tweetsElement.innerHTML = 'Loading...'
 
   const xhr = new XMLHttpRequest()
   const method = 'GET'
   const url = '/tweets'
   const responseType = 'json'
 
+  function handleDidLike(tweet_id, currentCount) {
+    console.log(tweet_id, currentCount)
+  }
+
+  function likeBtn(tweet) {
+    return (
+      "<button class='btn btn-primary btn-sm' onclick='handleDidLike(" +
+      tweet.id +
+      ',' +
+      tweet.likes +
+      ")'>" +
+      tweet.likes +
+      ' Like</button>'
+    )
+  }
+
+  function formatTweetElement(tweet) {
+    var formattedTweet =
+      '<div class="col-12 col-md-10 mx-auto border rounded py-3 mb-4 tweet" id="tweet-' +
+      tweet.id +
+      '">' +
+      '<p>' +
+      tweet.content +
+      '</p>' +
+      '<div class="btn-group">' +
+      likeBtn(tweet) +
+      '</div></div>'
+    return formattedTweet
+  }
+
   xhr.responseType = responseType
   xhr.open(method, url)
   xhr.onload = function () {
     const serverResponse = xhr.response
-    var listedItems = serverResponse.response
-    console.log(listedItems)
+    const listedItems = serverResponse.response
+    var finalTweetStr = ''
+    var i
+    for (i = 0; i < listedItems.length; i++) {
+      finalTweetStr += formatTweetElement(listedItems[i])
+    }
+    tweetsElement.innerHTML = finalTweetStr
+    //console.log(listedItems)
   }
   xhr.send()
 </script>
-{% endblock content %}
+{% endblock %}
